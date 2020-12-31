@@ -4,7 +4,11 @@ from bs4 import BeautifulSoup
 import re
 import urllib.request, urllib.error
 import xlwt
-import itertools as it
+#import itertools as it
+import pandas as pd
+import numpy as np
+from openpyxl import Workbook
+import xlrd
 import pysnooper   #debug tool
 
 
@@ -16,7 +20,7 @@ findTower = re.compile(r'项目楼栋情况.*?(\S+?栋)', re.S)
 findUnit = re.compile(r'座号.*?(\S+?单元)', re.S)
 findPrice = re.compile(r'拟售价格.*?(\S+?)元/平方米', re.S)
 findFloor = re.compile(r'楼层.*?(\d{1,2})', re.S)
-findRoom = re.compile(r'房号.*?(\d{3,4})', re.S)
+findRoom = re.compile(r'房号.*?(0[1-9])', re.S)
 findGrossArea = re.compile(r'建筑面积.*?(\S+?\d)平方米', re.S)
 findNetArea = re.compile(r'户内面积.*?(\S+?\d)平方米', re.S)
 
@@ -25,14 +29,16 @@ base_url = "http://zjj.sz.gov.cn/ris/bol/szfdc/"
 project_url = "http://zjj.sz.gov.cn/ris/bol/szfdc/projectdetail.aspx?id=51413"
 
 
-@pysnooper.snoop()
+#@pysnooper.snoop()
 def main():
-    tower_url_list = getTowerUrl(project_url)
-    unit_url_list = getUnitLinks(tower_url_list)
-    room_url_list = getRoomLinks(unit_url_list)
-    room_details = getDetails(room_url_list)
-    savepath = "project.xls"
-    saveData(room_details, savepath)
+#    tower_url_list = getTowerUrl(project_url)
+#    unit_url_list = getUnitLinks(tower_url_list)
+#    room_url_list = getRoomLinks(unit_url_list)
+#    room_details = getDetails(room_url_list)
+    interim_path = "project.xls"
+    result_path = "result.xlsx"
+#    saveData(room_details, interim_path)
+    saveParsedData(interim_path, result_path)
 
 
 # 爬取所有套房的详细信息，返回一个3级嵌套的list
@@ -111,6 +117,7 @@ def getRoomUrl(url):
 
 
 # 爬取套房详细信息
+#@pysnooper.snoop()
 def getRoomData(url):
     datalist = []
     html = askURL(url)
@@ -154,8 +161,8 @@ def askURL(url):
     return html
 
 
-# 保存数据到表格
-def saveData(datalist, savepath):
+# 保存数据到表格，得到 @咚咚找房 格式
+def saveData(datalist, interim_path):
     print("save.......")
     book = xlwt.Workbook(encoding="utf-8",style_compression=0)
     sheet = book.add_sheet('预售项目', cell_overwrite_ok=True)
@@ -169,8 +176,28 @@ def saveData(datalist, savepath):
                 sheet.write(i+1,j,row[j][0])
             else:
                 sheet.write(i+1,j,row[j])
-    book.save(savepath)
+    book.save(interim_path)
 
+
+
+# 升级 @咚咚找房 格式到 @唐老师傅 格式
+@pysnooper.snoop()
+def saveParsedData(path1, path2):
+    df = pd.read_excel(path1)
+    total = df['建筑面积'] * df['预售单价']
+    df['总价'] = total
+    df['总价'] = df['总价'].map(lambda x:('%d') % x)
+    df.fillna(0, inplace=True)
+    
+    df_sum = df.drop(["预售单价","建筑面积","户内面积"], axis=1)
+    df_price = df.drop(["总价","建筑面积","户内面积"], axis=1)
+
+    df_sum = df_sum.pivot_table(values='总价', index=['楼栋','单元','楼层'], columns='房号', aggfunc=np.sum)
+    df_price = df_price.pivot_table(values='预售单价', index=['楼栋','单元','楼层'], columns='房号', aggfunc=np.sum)
+
+    with pd.ExcelWriter(path2) as writer:
+        df_sum.to_excel(writer, sheet_name="总价分布")
+        df_price.to_excel(writer, sheet_name="单价分布")
 
 
 
