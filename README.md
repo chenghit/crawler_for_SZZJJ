@@ -4,7 +4,7 @@
 
 微博上有个自媒体 @唐老师傅 https://weibo.com/10890189 经常会把价格信息汇总做成图片。我想做一个类似的。
 
-现在生成的 `result.xlsx` 基本上符合 @唐老师傅 的格式，再粗略加工一下就可以了。但现在的问题是我的爬虫太简陋了，而各个楼盘的座、单元、房号的命名规则又太混乱，现在的正则表达式不能匹配所有楼盘。下一步计划用XPath替代正则表达式。
+现在生成的 `result.xlsx` 基本上符合 @唐老师傅 的格式，手工简单修改一下自动生成的`result.xlsx`，就可以得到 `result_manual_optimization.xlsx`，和 @唐老师傅 的表格差不多。
 
 ---
 
@@ -12,7 +12,11 @@
 
 优化了 RE patterns，现在除了个别写字楼，其他的住宅和公寓项目应该都没啥问题了。看上去不用XPath也行。
 
+2020-1-2
+
+修复了一些bug，现在可以抓取所有项目，包括办公、公寓、住宅、商铺，也适配地下层和区局锁定状态。
+
 
 ## 使用方法
 
-首先访问 http://zjj.sz.gov.cn/ris/bol/szfdc/index.aspx 找到想要爬取价格的楼盘，然后将楼盘的URL复制下来，替换变量 `project_url` 的值。准备环境变量之后运行 `python szZjj_crawler.py`。手工简单修改一下自动生成的`result.xlsx`，就可以得到 `result_manual_optimization.xlsx`，和 @唐老师傅 的表格差不多。
+首先访问 http://zjj.sz.gov.cn/ris/bol/szfdc/index.aspx 找到想要爬取价格的楼盘，然后将楼盘的URL复制下来，替换变量 `project_url` 的值。准备环境变量之后运行 `python szZjj_crawler.py`

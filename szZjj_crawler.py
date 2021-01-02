@@ -4,11 +4,11 @@ from bs4 import BeautifulSoup
 import re
 import urllib.request, urllib.error
 import xlwt
-#import itertools as it
 import pandas as pd
 import numpy as np
 from openpyxl import Workbook
 import xlrd
+import os
 import pysnooper   #debug tool
 
 
@@ -20,13 +20,13 @@ findTower = re.compile(r'项目楼栋情况.*?(\S+?栋)', re.S)
 findUnit = re.compile(r'座号.*?<td.*?>\s*?(\S+)\s*?</td>', re.S)
 findPrice = re.compile(r'拟售价格.*?(\S+?)元/平方米', re.S)
 findFloor = re.compile(r'楼层.*?<td.*?>\s*?(\S+)\s*?</td>', re.S)
-findRoom = re.compile(r'房号.*?(0[1-9]|[A-Z])', re.S)
+findRoom = re.compile(r'房号.*?\d{1,2}(\d{2}|[A-Z])', re.S)
 findGrossArea = re.compile(r'建筑面积.*?(\S+?\d)平方米', re.S)
 findNetArea = re.compile(r'户内面积.*?(\S+?\d)平方米', re.S)
 
 
 base_url = "http://zjj.sz.gov.cn/ris/bol/szfdc/"
-project_url = "http://zjj.sz.gov.cn/ris/bol/szfdc/projectdetail.aspx?id=52453"
+project_url = "http://zjj.sz.gov.cn/ris/bol/szfdc/projectdetail.aspx?id=51593"
 
 
 #@pysnooper.snoop()
@@ -132,7 +132,10 @@ def getRoomData(url):
     room = re.findall(findRoom, soup)
     datalist.append(room)
     price = re.findall(findPrice, soup)
-    datalist.append(price)
+    if price == ['--']:
+        datalist.append([0])
+    else:
+        datalist.append(price)
     gross_area = re.findall(findGrossArea, soup)
     datalist.append(gross_area)
     net_area = re.findall(findNetArea, soup)
@@ -162,8 +165,10 @@ def askURL(url):
 
 
 # 保存数据到表格，得到 @咚咚找房 格式
-def saveData(datalist, interim_path):
+def saveData(datalist, path):
     print("save.......")
+    if os.path.exists(path) is True:
+        os.remove(path)
     book = xlwt.Workbook(encoding="utf-8",style_compression=0)
     sheet = book.add_sheet('预售项目', cell_overwrite_ok=True)
     col = ("楼栋","单元","楼层","房号","预售单价","建筑面积","户内面积")
@@ -176,27 +181,34 @@ def saveData(datalist, interim_path):
                 sheet.write(i+1,j,row[j][0])
             else:
                 sheet.write(i+1,j,row[j])
-    book.save(interim_path)
+    book.save(path)
 
 
 
 # 升级 @咚咚找房 格式到 @唐老师傅 格式
-@pysnooper.snoop()
+#@pysnooper.snoop()
 def saveParsedData(path1, path2):
     df = pd.read_excel(path1)
     total = df['建筑面积'] * df['预售单价']
     df['总价'] = total
     df['总价'] = df['总价'].map(lambda x:('%d') % x)
-    df.fillna(0, inplace=True)
+    df.fillna('--', inplace=True)
+
+    if df['单元'].dtypes == 'int64':
+        df['单元'] = df['单元'].map(lambda x:('%d') % x)
 
     df["楼栋"] = df["楼栋"] + df["单元"]
     
-    df_sum = df.drop(["单元", "预售单价","建筑面积","户内面积"], axis=1)
-    df_price = df.drop(["单元", "总价","建筑面积","户内面积"], axis=1)
+    df_sum = df.drop(["单元","预售单价","建筑面积","户内面积"], axis=1)
+    df_price = df.drop(["单元","总价","建筑面积","户内面积"], axis=1)
 
     df_sum = df_sum.pivot_table(values='总价', index=['楼栋','楼层'], columns='房号', aggfunc=np.sum)
+    df_sum.replace("0", "", inplace=True)
     df_price = df_price.pivot_table(values='预售单价', index=['楼栋','楼层'], columns='房号', aggfunc=np.sum)
-
+    df_price.replace(0, "", inplace=True)
+    
+    if os.path.exists(path2) is True:
+        os.remove(path2)
     with pd.ExcelWriter(path2) as writer:
         df_sum.to_excel(writer, sheet_name="总价分布")
         df_price.to_excel(writer, sheet_name="单价分布")
