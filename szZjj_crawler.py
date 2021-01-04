@@ -20,13 +20,13 @@ findTower = re.compile(r'项目楼栋情况.*?(\S+?栋)', re.S)
 findUnit = re.compile(r'座号.*?<td.*?>\s*?(\S+)\s*?</td>', re.S)
 findPrice = re.compile(r'拟售价格.*?(\S+?)元/平方米', re.S)
 findFloor = re.compile(r'楼层.*?<td.*?>\s*?(\S+)\s*?</td>', re.S)
-findRoom = re.compile(r'房号.*?\d{1,2}(\d{2}|[A-Z])', re.S)
+findRoom = re.compile(r'房号.*?<td.*?>\s*?(\S+)\s*?</td>', re.S)
 findGrossArea = re.compile(r'建筑面积.*?(\S+?\d)平方米', re.S)
 findNetArea = re.compile(r'户内面积.*?(\S+?\d)平方米', re.S)
 
 
 base_url = "http://zjj.sz.gov.cn/ris/bol/szfdc/"
-project_url = "http://zjj.sz.gov.cn/ris/bol/szfdc/projectdetail.aspx?id=51593"
+project_url = "http://zjj.sz.gov.cn/ris/bol/szfdc/projectdetail.aspx?id=52513"
 
 
 #@pysnooper.snoop()
@@ -129,19 +129,39 @@ def getRoomData(url):
     datalist.append(unit)
     floor = re.findall(findFloor, soup)
     datalist.append(floor)
+
     room = re.findall(findRoom, soup)
-    datalist.append(room)
+    if is_contains_chinese(room[0]):
+        datalist.append(room)
+    else:
+        r = list(room[0])
+        if r[-1].isalpha():
+            r = [''.join(r[-1])]
+        else:
+            r = [''.join(r[-2:])]
+        datalist.append(r)
+
     price = re.findall(findPrice, soup)
     if price == ['--']:
         datalist.append([0])
     else:
         datalist.append(price)
+
     gross_area = re.findall(findGrossArea, soup)
     datalist.append(gross_area)
     net_area = re.findall(findNetArea, soup)
     datalist.append(net_area)
 
     return datalist
+
+
+
+#检验是否含有中文字符
+def is_contains_chinese(strs):
+    for _char in strs:
+        if '\u4e00' <= _char <= '\u9fa5':
+            return True
+    return False
 
 
 # 得到指定一个URL的网页内容
