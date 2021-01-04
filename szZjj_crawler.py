@@ -136,7 +136,7 @@ def getRoomData(url):
     else:
         r = list(room[0])
         if r[-1].isalpha():
-            r = [''.join(r[-1])]
+            r = [r[-1]]
         else:
             r = [''.join(r[-2:])]
         datalist.append(r)
