@@ -23,6 +23,7 @@
 2021-1-13
 
 新建一个`new_project_crawler.py`脚本，可以自动把当天公布的所有新房预售项目爬下来，以项目名称命名excel文件
+新建一个`webex_auto_crawler.py`脚本，可以持续监控住建局网站，并向Webex Teams发送监控结果。如果当天有新公布的新房预售项目，则自动抓取所有项目的价格表。
 
 
 ## 使用方法
@@ -34,3 +35,7 @@
 ### 一次性爬取当天公布的所有新房预售项目
 
 直接执行`python new_project_crawler.py`
+
+### 持续监控并自动抓取当天公布的所有新房预售项目，并向Webex Teams发送结果
+
+`python webex_auto_crawler.py`
