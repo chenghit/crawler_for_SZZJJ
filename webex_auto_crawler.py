@@ -131,8 +131,8 @@ def getNewProjectUrls(url):
     name_list = []    
     ids, names, dates = getProjectIds_Names_Dates(url)
     for i in range(len(ids)):
-#        if dates[i] == str(datetime.date.today()):
-        if dates[i] == '2020-12-30':
+        if dates[i] == str(datetime.date.today()):
+#        if dates[i] == '2020-12-30':
             name_list.append(names[i])
             urls.append(project_base_url + ids[i])
     return name_list, urls
