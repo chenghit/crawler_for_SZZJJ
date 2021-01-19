@@ -83,7 +83,7 @@ def main():
         if len(project_urls) == 0:
             message = '今日没有公布新房预售项目'
             print(message)
-            sendMessage(token=chatbot_token, room_id=webex_room_id, message=message)
+#            sendMessage(token=chatbot_token, room_id=webex_room_id, message=message)
             time.sleep(second)
         else:
             message = '今日公布了 ' + str(len(project_urls)) + ' 个新房预售项目，正在爬取信息...'
@@ -130,9 +130,18 @@ def getNewProjectUrls(url):
     urls = []
     name_list = []    
     ids, names, dates = getProjectIds_Names_Dates(url)
+    hac = u'海岸'
+    yf = u'懿府'
+    hc = u'汇城'
+    my = u'名苑'
+    # tj = u'天境'
+    # yg = u'悦桂'
     for i in range(len(ids)):
-        if dates[i] == str(datetime.date.today()):
-#        if dates[i] == '2020-12-30':
+        # if dates[i] == str(datetime.date.today()):
+        # if dates[i] == '2021-01-06':
+        n = names[i]
+        if hac in n or yf in n or hc in n or my in n:
+        # if tj in n or yg in n:
             name_list.append(names[i])
             urls.append(project_base_url + ids[i])
     return name_list, urls

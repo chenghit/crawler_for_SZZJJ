@@ -25,6 +25,12 @@
 新建一个`new_project_crawler.py`脚本，可以自动把当天公布的所有新房预售项目爬下来，以项目名称命名excel文件
 新建一个`webex_auto_crawler.py`脚本，可以持续监控住建局网站，并向Webex Teams发送监控结果。如果当天有新公布的新房预售项目，则自动抓取所有项目的价格表。
 
+2021-1-19
+
+被ZJJ坑了。龙光天境和天健悦桂府的备案价格在1月6日就被批准了，但是1月18日才公布。导致自动监控失败。
+很有可能万丰海岸城也是一样的情况。
+更改监控的判断条件。当你要监控zjj官网的时候，其实已经知道了项目名称。所以以项目关键字作为判断标准。
+接下来会有3个项目：万丰海岸城，深铁懿府，汇城名苑。当然，如果未来有你感兴趣的项目，修改变量即可。
 
 ## 使用方法
 
@@ -36,6 +42,30 @@
 
 直接执行`python new_project_crawler.py`
 
-### 持续监控并自动抓取当天公布的所有新房预售项目，并向Webex Teams发送结果
+### 持续监控并自动抓取 特定的 预售项目，并向Webex Teams发送结果
+
+先定义关键字，然后判断关键字是否在首页的项目名称中存在。如果存在，则发送 Webex 通知并抓取：
+
+```
+def getNewProjectUrls(url):
+    urls = []
+    name_list = []    
+    ids, names, dates = getProjectIds_Names_Dates(url)
+    hac = u'海岸'
+    yf = u'懿府'
+    hc = u'汇城'
+    my = u'名苑'
+    # tj = u'天境'
+    # yg = u'悦桂'
+    for i in range(len(ids)):
+        # if dates[i] == str(datetime.date.today()):
+        # if dates[i] == '2021-01-06':
+        n = names[i]
+        if hac in n or yf in n or hc in n or my in n:
+        # if tj in n or yg in n:
+            name_list.append(names[i])
+            urls.append(project_base_url + ids[i])
+    return name_list, urls
+```
 
 `python webex_auto_crawler.py`
