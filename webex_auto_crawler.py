@@ -91,7 +91,7 @@ def main(targets=targets):
         else:
             for name in project_names:
                 names = names + name + '，'
-            message = '新公布：' + names + '共' + str(len(project_urls)) + '个新房预售项目。正在爬取信息...'
+            message = '新公布：' + names + '共' + str(len(project_urls)) + '个新房预售项目。正在爬取价格表...'
             print(message)
             sendMessage(token=chatbot_token, room_id=webex_room_id, message=message)
             getAllData(name_list=project_names, project_list=project_urls)
