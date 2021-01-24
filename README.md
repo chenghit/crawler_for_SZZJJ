@@ -52,22 +52,7 @@ ZJJ悄悄把龙光天境和天健悦桂府的批准日期修改成1月18日了�
 先在`targets`变量中定义关键字，然后判断关键字是否在首页的项目名称中存在。如果存在，则发送 Webex 通知并抓取：
 
 ```
-def getNewProjectUrls(url):
-    urls = []
-    name_list = []    
-    ids, names, dates = getProjectIds_Names_Dates(url)
-    targets = ['海岸', '懿府', '汇城', '缙山', '中泰', '香山']
-    # targets = ['悦桂府', '天境']
-    for i in range(len(ids)):
-        # if dates[i] == str(datetime.date.today()):
-        # if dates[i] == '2021-01-06':
-        name = names[i]
-        for t in range(len(targets)):
-            target = targets[t]
-            if target in name:
-                name_list.append(names[i])
-                urls.append(project_base_url + ids[i])
-    return name_list, urls
+targets = ['海岸', '懿府', '汇城', '缙山', '中泰', '香山']
 ```
 
 `python webex_auto_crawler.py`

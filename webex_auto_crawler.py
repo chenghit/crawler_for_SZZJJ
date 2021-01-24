@@ -20,6 +20,8 @@ import pysnooper   #debug tool
 
 webex_room_id = "Y2lzY29zcGFyazovL3VzL1JPT00vOWQ5NGU3NjAtNTU5ZC0xMWViLWI0YTEtM2Y0NDdhYTE0MGVj"
 chatbot_token = ''
+targets = ['海岸', '懿府', '汇城', '缙山', '中泰', '香山']
+# targets = ['悦桂府', '天境']
 
 with open('webex_bot_token.txt', 'r') as f:
     chatbot_token = f.readline()
@@ -72,8 +74,8 @@ def sleep_time(hour, min, sec):
 second = sleep_time(0, 5, 0)
 
 #@pysnooper.snoop()
-def main():
-    project_names, project_urls = getNewProjectUrls(base_url)
+def main(targets=targets):
+    project_names, project_urls = getNewProjectUrls(targets, base_url)
     message = ''
     print()
     print('-' * 80)
@@ -129,15 +131,11 @@ def getAllData(name_list, project_list):
 
 #获取当天公布的，或者特定日期，或者特定关键字的项目URL
 #@pysnooper.snoop()
-def getNewProjectUrls(url):
+def getNewProjectUrls(targets, url):
     urls = []
     name_list = []    
     ids, names, dates = getProjectIds_Names_Dates(url)
-    targets = ['海岸', '懿府', '汇城', '缙山', '中泰', '香山']
-    # targets = ['悦桂府', '天境']
     for i in range(len(ids)):
-        # if dates[i] == str(datetime.date.today()):
-        # if dates[i] == '2021-01-06':
         name = names[i]
         for t in range(len(targets)):
             target = targets[t]
