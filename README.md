@@ -32,6 +32,11 @@
 更改监控的判断条件。当你要监控zjj官网的时候，其实已经知道了项目名称。所以以项目关键字作为判断标准。
 接下来会有3个项目：万丰海岸城，深铁懿府，汇城名苑。当然，如果未来有你感兴趣的项目，修改变量即可。
 
+2021-1-24
+
+ZJJ悄悄把龙光天境和天健悦桂府的批准日期修改成1月18日了。。。
+优化一点代码，Webex看通知更详细些
+
 ## 使用方法
 
 ### 爬取特定的项目：
@@ -44,27 +49,24 @@
 
 ### 持续监控并自动抓取 特定的 预售项目，并向Webex Teams发送结果
 
-先定义关键字，然后判断关键字是否在首页的项目名称中存在。如果存在，则发送 Webex 通知并抓取：
+先在`targets`变量中定义关键字，然后判断关键字是否在首页的项目名称中存在。如果存在，则发送 Webex 通知并抓取：
 
 ```
 def getNewProjectUrls(url):
     urls = []
     name_list = []    
     ids, names, dates = getProjectIds_Names_Dates(url)
-    hac = u'海岸'
-    yf = u'懿府'
-    hc = u'汇城'
-    my = u'名苑'
-    # tj = u'天境'
-    # yg = u'悦桂'
+    targets = ['海岸', '懿府', '汇城', '缙山', '中泰', '香山']
+    # targets = ['悦桂府', '天境']
     for i in range(len(ids)):
         # if dates[i] == str(datetime.date.today()):
         # if dates[i] == '2021-01-06':
-        n = names[i]
-        if hac in n or yf in n or hc in n or my in n:
-        # if tj in n or yg in n:
-            name_list.append(names[i])
-            urls.append(project_base_url + ids[i])
+        name = names[i]
+        for t in range(len(targets)):
+            target = targets[t]
+            if target in name:
+                name_list.append(names[i])
+                urls.append(project_base_url + ids[i])
     return name_list, urls
 ```
 

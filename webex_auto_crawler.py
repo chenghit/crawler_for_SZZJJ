@@ -79,14 +79,17 @@ def main():
     print('-' * 80)
     print()
     x = True
+    names = ''
     while x:
         if len(project_urls) == 0:
-            message = '今日没有公布新房预售项目'
+            message = '目标新房预售项目没有被公布'
             print(message)
 #            sendMessage(token=chatbot_token, room_id=webex_room_id, message=message)
             time.sleep(second)
         else:
-            message = '今日公布了 ' + str(len(project_urls)) + ' 个新房预售项目，正在爬取信息...'
+            for name in project_names:
+                names = names + name + '，'
+            message = '新公布：' + names + '共' + str(len(project_urls)) + '个新房预售项目。正在爬取信息...'
             print(message)
             sendMessage(token=chatbot_token, room_id=webex_room_id, message=message)
             getAllData(name_list=project_names, project_list=project_urls)
@@ -104,7 +107,7 @@ def getAllData(name_list, project_list):
     message = ''
     for i in range(len(project_list)):
         print()
-        message = '正在爬取第 ' + str(i+1) + ' 个项目'
+        message = '正在爬取' + name_list[i] + '项目'
         print(message)
         sendMessage(token=chatbot_token, room_id=webex_room_id, message=message)
         print()
@@ -117,33 +120,30 @@ def getAllData(name_list, project_list):
         saveData(room_details, interim_path)
         saveParsedData(interim_path, result_path)
         print()
-        message = '第 ' + str(i+1) + ' 个项目爬取完成，剩余 ' + \
+        message = name_list[i] + '项目爬取完成，剩余 ' + \
             str(len(project_list)-i-1) + ' 个项目'
         print(message)
         sendMessage(token=chatbot_token, room_id=webex_room_id, message=message)
         print()
 
 
-#获取当天公布的项目URL
+#获取当天公布的，或者特定日期，或者特定关键字的项目URL
 #@pysnooper.snoop()
 def getNewProjectUrls(url):
     urls = []
     name_list = []    
     ids, names, dates = getProjectIds_Names_Dates(url)
-    hac = u'海岸'
-    yf = u'懿府'
-    hc = u'汇城'
-    my = u'名苑'
-    # tj = u'天境'
-    # yg = u'悦桂'
+    targets = ['海岸', '懿府', '汇城', '缙山', '中泰', '香山']
+    # targets = ['悦桂府', '天境']
     for i in range(len(ids)):
         # if dates[i] == str(datetime.date.today()):
         # if dates[i] == '2021-01-06':
-        n = names[i]
-        if hac in n or yf in n or hc in n or my in n:
-        # if tj in n or yg in n:
-            name_list.append(names[i])
-            urls.append(project_base_url + ids[i])
+        name = names[i]
+        for t in range(len(targets)):
+            target = targets[t]
+            if target in name:
+                name_list.append(names[i])
+                urls.append(project_base_url + ids[i])
     return name_list, urls
     
 
